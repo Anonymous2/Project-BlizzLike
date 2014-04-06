@@ -109,7 +109,7 @@ elseif(vars.enrage <= 0)then
 	pUnit:PlaySoundToSet(16945)
 	vars.enrage = 600
 end
-if(pUnit:HasAura(SPELL_BONE_STORM) and pUnit:GetAuraObject(SPELL_BONE_STORM):GetDuration() > 0)then
+if(pUnit:HasAura(SPELL_BONE_STORM) and pUnit:GetAuraObjectById(SPELL_BONE_STORM):GetDuration() > 0 and pUnit:GetAuraObjectById(SPELL_BONE_STORM):GetDuration() < 500)then
 	pUnit:ClearThreatList()
 	vars.flame1 = vars.flame1 - 1
 	vars.damagest = vars.damagest - 1
@@ -127,8 +127,11 @@ if(pUnit:HasAura(SPELL_BONE_STORM) and pUnit:GetAuraObject(SPELL_BONE_STORM):Get
 		end
 		pUnit:CastSpell(SPELL_COLDFLAME_BONE_STORM)
 	end
-elseif(pUnit:HasAura(SPELL_BONE_STORM) and pUnit:GetAuraObject(SPELL_BONE_STORM):GetDuration() < 500)then
+elseif(pUnit:HasAura(SPELL_BONE_STORM) and pUnit:GetAuraObjectById(SPELL_BONE_STORM):GetDuration() < 500)then
 	pUnit:RemoveAura(SPELL_BONE_STORM)
+	if(pUnit:IsRooted())then
+		pUnit:Unroot()
+	end
 end
 end
 
@@ -147,8 +150,11 @@ function BossOnDeath(pUnit, Event)
 pUnit:PlaySoundToSet(16944)
 pUnit:SendChatMessage(12, 0, "I see... only darkness...")
 for k,v in pairs(pUnit:GetInRangeObjects())do
+	if(v:GetEntry() == GO_MARROWGAR_ENTRANCE)then
+		v:Activate()
+	end
 	for i = 1, #GO_DATA do
-		if(v:GetEntry() == GO_DATA[i] or v:GetEntry() == GO_MARROWGAR_ENTRANCE)then
+		if(v:GetEntry() == GO_DATA[i])then
 			v:Activate()
 		end
 	end
@@ -168,7 +174,38 @@ pUnit:RemoveAIUpdateEvent()
 pUnit:RemoveAllAuras()
 end
 
-function BoneStormCast()
+function BoneSpikeCast(spellIndex, pSpell)
+local caster = pSpell:GetCaster()
+if(caster:GetDungeonDifficulty() == 0 or caster:GetDungeonDifficulty() == 2)then
+	local plr = caster:GetRandomPlayer(0)
+	if(plr and not plr:IsFriendly())then
+		plr:CastSpell(69062)
+	end
+else
+	local targetnum = 3
+	if(caster:GetInRangePlayersCount() >= 3)then
+		local targetlist = {}
+		repeat
+		local plr = caster:GetRandomPlayer(0)
+			for i = 1, #targetlist do
+				if not(targetlist[i])then
+					targetlist[i] = plr
+				end
+			end
+		until targetnum == 0
+		if(targetnum == 0)then
+			for i = 1, #targetlist do
+				if(targetlist[i])then
+					targetlist[i]:CastSpell(69062)
+				end
+			end
+		end
+	end
+	else
+		for k,v in pairs(caster:GetInRangePlayers())do
+			v:CastSpell(69062)
+		end
+	end
 end
  
 RegisterUnitEvent(BOSS_MARROWGAR, 1,BossOnCombat)
@@ -177,3 +214,4 @@ RegisterUnitEvent(BOSS_MARROWGAR, 3,BossOnKillPlr)
 RegisterUnitEvent(BOSS_MARROWGAR, 4,BossOnDeath)
 RegisterUnitEvent(BOSS_MARROWGAR, 18,BossOnLoad)
 RegisterUnitEvent(BOSS_MARROWGAR,21,BossAI)
+RegisterDummySpell(SPELL_BONE_SPIKE_GRAVEYARD, BoneSpikeCast)
