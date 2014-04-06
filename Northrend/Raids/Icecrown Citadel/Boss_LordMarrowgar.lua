@@ -200,12 +200,12 @@ else
 				end
 			end
 		end
-	end
 	else
 		for k,v in pairs(caster:GetInRangePlayers())do
 			v:CastSpell(69062)
 		end
 	end
+end
 end
  
 RegisterUnitEvent(BOSS_MARROWGAR, 1,BossOnCombat)
