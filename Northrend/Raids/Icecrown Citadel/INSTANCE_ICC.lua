@@ -31,7 +31,7 @@ local object_link = {
 {36853,202181},
 {-2,202223}
 }
-local scourge_ports = {{202246},{202245},{202244},{202243},{202242},{202235},{202223}}
+local scourge_ports = {202246,202245,202244,202243,202242,202235,202223}
 local tele_coords = {
 {1,70781,-17.1928,2211.44,30.1158,0},
 {2,70856,-503.62,2211.47,62.8235,0},
@@ -48,13 +48,54 @@ local MAP_ICC = 631
 local SPELL_A_BUFF = 73828
 local SPELL_H_BUFF = 73822
 
-function DoorOnLoad(iid, pPlayer)
+local AT_TRAP		= 5649
+local AT_MARROW		= 5732
+local AT_DEATH		= 5709
+local AT_DB_PORT	= 5698
+local AT_FROSTWING	= {5618,5617,5616}
+local AT_BLOOD		= 5729
+local AT_FROZEN_T	= 5718
+
+local GAMEOBJECT_BYTES_1	= 0x0006 + 0x000B
+local GAMEOBJECT_FLAGS		= 0x0006 + 0x0003
+ --[[
+function INSTANCE_ICC.InstanceOnCreate(id)
+INSTANCE_ICC[id] = {}
+INSTANCE_ICC[id].builddata = true
+INSTANCE_ICC[id].buff = true
+INSTANCE_ICC[id].marrowgar = false
+INSTANCE_ICC[id].deathwhisper = false
+INSTANCE_ICC[id].saurfang = false
+INSTANCE_ICC[id].frtap = false
+INSTANCE_ICC[id].festergut = false
+INSTANCE_ICC[id].rotface = false
+INSTANCE_ICC[id].prof = false
+INSTANCE_ICC[id].prince = false
+INSTANCE_ICC[id].bloodqueen = false
+INSTANCE_ICC[id].dreamwalker = false
+INSTANCE_ICC[id].sindragosa = false
+INSTANCE_ICC[id].lichking = false
+end
+ ]]-- todo
+function INSTANCE_ICC.DoorOnLoad(iid, pPlayer)
 local id = pPlayer:GetInstanceID()
 if(INSTANCE_ICC[id] == nil)then
 	local string_data = {}
 	INSTANCE_ICC[id] = {}
 	INSTANCE_ICC[id].builddata = true
 	INSTANCE_ICC[id].buff = true
+	INSTANCE_ICC[id].marrowgar = false
+	INSTANCE_ICC[id].deathwhisper = false
+	INSTANCE_ICC[id].frtap = false
+	INSTANCE_ICC[id].saurfang = false
+	INSTANCE_ICC[id].festergut = false
+	INSTANCE_ICC[id].rotface = false
+	INSTANCE_ICC[id].prof = false
+	INSTANCE_ICC[id].prince = false
+	INSTANCE_ICC[id].bloodqueen = false
+	INSTANCE_ICC[id].dreamwalker = false
+	INSTANCE_ICC[id].sindragosa = false
+	INSTANCE_ICC[id].lichking = false
 	local result = CharDBQuery("SELECT killed_npc_guids FROM instances WHERE id="..id..";")
 	if(result ~= nil)then
 		local colcount = result:GetColumnCount();
@@ -104,6 +145,7 @@ if(INSTANCE_ICC[id] == nil)then
 				end
 				if(b11 ~= nil)then
 					INSTANCE_ICC[id].lichking = true
+					INSTANCE_ICC[id].buff = false
 				end
 			end
 		until result:NextRow() ~= true;
@@ -122,56 +164,56 @@ if(INSTANCE_ICC[id].buff == true)then
 end
 end
 
-function OnGOpush(pGO)
+function INSTANCE_ICC.OnGOpush(pGO)
 local plr = pGO:GetClosestPlayer()
 if(plr)then
 	local id = plr:GetInstanceID()
 	for b = 1,#object_link do
-		if(pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 36612 and INSTANCE_ICC[id].marrowgar)then
+		if(INSTANCE_ICC[id].marrowgar == true and pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 36612 and pGO:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
 			pGO:Activate()
 		end
-		if(pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 36855 and INSTANCE_ICC[id].deathwhisper)then
+		if(INSTANCE_ICC[id].deathwhisper == true and pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 36855 and pGO:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
 			pGO:Activate()
 		end
-		if(pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 37813 and INSTANCE_ICC[id].saurfang)then
+		if(INSTANCE_ICC[id].saurfang == true and pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 37813 and pGO:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
 			pGO:Activate()
 		end
-		if(pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 36626 and INSTANCE_ICC[id].festergut and INSTANCE_ICC[id].rotface == nil)then
+		if(INSTANCE_ICC[id].festergut == true and INSTANCE_ICC[id].rotface == false and pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 36626 and pGO:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
 			pGO:Activate()
-		elseif(pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 36626 and INSTANCE_ICC[id].festergut and INSTANCE_ICC[id].rotface)then
+		elseif(INSTANCE_ICC[id].festergut == true and INSTANCE_ICC[id].rotface == true and pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 36626 and pGO:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
+			pGO:Activate()
+		end
+		if(INSTANCE_ICC[id].rotface == true and INSTANCE_ICC[id].festergut == false and pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 36627 and pGO:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
+			pGO:Activate()
+		elseif(INSTANCE_ICC[id].rotface == true and INSTANCE_ICC[id].festergut == true and pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 36627)then
 			pGO:Despawn(1,0)
 		end
-		if(pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 36627 and INSTANCE_ICC[id].rotface and INSTANCE_ICC[id].festergut == nil)then
-			pGO:Activate()
-		elseif(pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 36627 and INSTANCE_ICC[id].rotface and INSTANCE_ICC[id].festergut)then
-			pGO:Despawn(1,0)
-		end
-		if(pGO:GetEntry() == object_link[b][2] and object_link[b][1] == -1 and INSTANCE_ICC[id].rotface and INSTANCE_ICC[id].festergut)then
+		if(INSTANCE_ICC[id].rotface == true and INSTANCE_ICC[id].festergut == true and pGO:GetEntry() == object_link[b][2] and object_link[b][1] == -1 and pGO:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
 			pGO:Activate()
 		end
-		if(pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 36678 and INSTANCE_ICC[id].prof)then
+		if(INSTANCE_ICC[id].prof == true and pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 36678 and pGO:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
 			pGO:Activate()
 		end
-		if(pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 37970 and INSTANCE_ICC[id].prince)then
+		if(INSTANCE_ICC[id].prince == true and pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 37970 and pGO:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
 			pGO:Activate()
 		end
-		if(pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 37955 and INSTANCE_ICC[id].bloodqueen)then
+		if(INSTANCE_ICC[id].bloodqueen == true and pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 37955 and pGO:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
 			pGO:Activate()
 		end
-		if(pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 36789 and INSTANCE_ICC[id].dreamwalker)then
+		if(INSTANCE_ICC[id].dreamwalker == true and pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 36789 and pGO:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
 			pGO:Activate()
 		end
-		if(pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 36853 and INSTANCE_ICC[id].sindragosa)then
+		if(INSTANCE_ICC[id].sindragosa == true and pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 36853 and pGO:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
 			pGO:Activate()
 		end
-		if(pGO:GetEntry() == object_link[b][2] and object_link[b][1] == -2 and INSTANCE_ICC[id].sindragosa and INSTANCE_ICC[id].prof and INSTANCE_ICC[id].bloodqueen)then
+		if(INSTANCE_ICC[id].sindragosa == true and INSTANCE_ICC[id].prof == true and INSTANCE_ICC[id].bloodqueen == true and pGO:GetEntry() == object_link[b][2] and object_link[b][1] == -2 and pGO:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
 			pGO:Activate()
 		end
 	end
 end
 end
 
-function TeleportOnGossip(pGO, event, pPlayer)
+function INSTANCE_ICC.TeleportOnGossip(pGO, event, pPlayer)
 local id = pPlayer:GetInstanceID()
 pGO:GossipCreateMenu(15221, pPlayer, 0)
 pGO:GossipMenuAddItem(0,"Teleport to the Light's Hammer.", 1, 0)
@@ -191,13 +233,13 @@ end
 pGO:GossipSendMenu(pPlayer)
 end
 
-function TeleporterOnSelect(pGO, event, pPlayer, id, intid, code)
+function INSTANCE_ICC.TeleporterOnSelect(pGO, event, pPlayer, id, intid, code)
 for i = 1, #tele_coords do
 	if(intid == tele_coords[i][1] and not pPlayer:IsInCombat())then
 		pPlayer:CastSpell(tele_coords[i][2])
 		pPlayer:Teleport(MAP_ICC,tele_coords[i][3],tele_coords[i][4],tele_coords[i][5],tele_coords[i][6])
 		pPlayer:GossipComplete()
-	elseif(pPlayer:IsInCombat())then
+	elseif(intid == tele_coords[i][1] and pPlayer:IsInCombat())then
 		pPlayer:SendAreaTriggerMessage("You are in combat!")
 		pPlayer:GossipComplete()
 	end
@@ -205,7 +247,7 @@ end
 pPlayer:GossipComplete()
 end
 
-function OnZoneOut(event, pPlayer, ZoneId, OldZoneId)
+function INSTANCE_ICC.OnZoneOut(event, pPlayer, ZoneId, OldZoneId)
 if(pPlayer:GetMapId() ~= MAP_ICC)then
 	if(pPlayer:HasAura(SPELL_CHILL))then
 		pPlayer:RemoveAura(SPELL_CHILL)
@@ -219,7 +261,7 @@ if(pPlayer:GetMapId() ~= MAP_ICC)then
 end
 end
 
-function KillBoss(id, pVictim, pKiller)
+function INSTANCE_ICC.KillBoss(id, pVictim, pKiller)
 local id = pKiller:GetInstanceID()
 if(pVictim:IsCreature() and pVictim:GetEntry() == 36612)then
 	INSTANCE_ICC[id].marrowgar = true
@@ -246,20 +288,29 @@ elseif(pVictim:IsCreature() and pVictim:GetEntry() == 36597)then
 end
 end
 
-function InstanceDestroy(id)
+function INSTANCE_ICC.InstanceDestroy(id)
 INSTANCE_ICC[id] = nil
 end
 
-RegisterInstanceEvent(MAP_ICC,10,InstanceDestroy)
-RegisterServerHook(15,OnZoneOut)
-RegisterInstanceEvent(MAP_ICC,2,DoorOnLoad)
-RegisterInstanceEvent(MAP_ICC,5,KillBoss)
+function INSTANCE_ICC.OnAreaTrigger(iid, pPlayer, nAreaId)
+local id = pPlayer:GetInstanceID()
+if(nAreaId == AT_TRAP and INSTANCE_ICC[id].frtap ~= true)then
+	INSTANCE_ICC[id].frtap = true
+end
+end
+
+RegisterInstanceEvent(MAP_ICC,3,INSTANCE_ICC.OnAreaTrigger)
+ -- RegisterInstanceEvent(MAP_ICC,9,INSTANCE_ICC.InstanceOnCreate)
+RegisterInstanceEvent(MAP_ICC,10,INSTANCE_ICC.InstanceDestroy)
+RegisterServerHook(15,INSTANCE_ICC.OnZoneOut)
+RegisterInstanceEvent(MAP_ICC,2,INSTANCE_ICC.DoorOnLoad)
+RegisterInstanceEvent(MAP_ICC,5,INSTANCE_ICC.KillBoss)
 for i = 1, #object_link do
-RegisterGameObjectEvent(object_link[i][2],2,OnGOpush)
+RegisterGameObjectEvent(object_link[i][2],2,INSTANCE_ICC.OnGOpush)
 end
 for i = 1, #scourge_ports do
-RegisterGameObjectEvent(scourge_ports[i][1],4,TeleportOnGossip)
+RegisterGameObjectEvent(scourge_ports[i],4,INSTANCE_ICC.TeleportOnGossip)
 end
 for i = 1, #scourge_ports do
-RegisterGOGossipEvent(scourge_ports[i][1],2,TeleporterOnSelect)
+RegisterGOGossipEvent(scourge_ports[i],2,INSTANCE_ICC.TeleporterOnSelect)
 end

@@ -29,6 +29,9 @@ local SPELL_RIDE_VEHICLE			= 46598
 local SPELL_COLDFLAME_PASSIVE		= 69145
 local SPELL_COLDFLAME_SUMMON		= 69147
 
+local GAMEOBJECT_BYTES_1	= 0x0006 + 0x000B
+local GAMEOBJECT_FLAGS		= 0x0006 + 0x0003
+
 local self = getfenv(1)
 
 function BossOnLoad(pUnit)
@@ -54,13 +57,14 @@ pUnit:SendChatMessage(14, 0, "The Scourge will wash over this world as a swarm o
 pUnit:PlaySoundToSet(16941)
 pUnit:RegisterAIUpdateEvent(1000)
 for k,v in pairs(pUnit:GetInRangeObjects())do
-	if(v:GetEntry() == GO_MARROWGAR_ENTRANCE)then
+	if(v:GetEntry() == GO_MARROWGAR_ENTRANCE and v:GetByte(GAMEOBJECT_BYTES_1,0) ~= 1)then
 		v:Activate()
 	end
 end
 end
 
 function BossAI(pUnit)
+ -- if(pUnit:IsCasting())then return end
 if(pUnit == nil)then
 	pUnit:RemoveAIUpdateEvent()
 end
@@ -154,7 +158,7 @@ for k,v in pairs(pUnit:GetInRangeObjects())do
 		v:Activate()
 	end
 	for i = 1, #GO_DATA do
-		if(v:GetEntry() == GO_DATA[i])then
+		if(v:GetEntry() == GO_DATA[i] and v:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
 			v:Activate()
 		end
 	end
@@ -165,7 +169,7 @@ end
  
 function BossOnLeaveCombat(pUnit, Event)
 for k,v in pairs(pUnit:GetInRangeObjects())do
-	if(v:GetEntry() == GO_MARROWGAR_ENTRANCE)then
+	if(v:GetEntry() == GO_MARROWGAR_ENTRANCE and v:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
 		v:Activate()
 	end
 end
