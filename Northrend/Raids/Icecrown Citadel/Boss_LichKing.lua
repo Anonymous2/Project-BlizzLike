@@ -1,3 +1,4 @@
+--[[
 ------------------------------------------------------------------
 --[[
 This script was made by Stoneharry of www.MMOwned.com
@@ -1177,5 +1178,5 @@ if CheatMode == true then
 	end
 	RegisterServerHook(16, "zczz_OnChat")
 end
-
+]]--
 ------------------------------------------------------------------------
