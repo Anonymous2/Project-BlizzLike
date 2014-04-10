@@ -2,6 +2,7 @@
 local NPC_ADHERENTS						= 37949
 local NPC_FANATIC						= 37890
 local NPC_SHADE							= 38222
+local NPC_DARNAVAN						= 38472
 local BOSS_DEATHWHISPER					= 36855
 
 local GO_DOOR_DW						= 201563
@@ -23,14 +24,14 @@ local SPELL_BERSERK						= 47008
  -- Trash
 local SPELL_MARTHYRDOM					= 70903 -- Shared
  -- Fanatics
-local SPELL_DARK_TRANSFORM				= 70900
+local SPELL_DARK_TRANSFORM				= 70900 -- 
 local SPELL_NECROTIC_STRIKE				= 70659
 local SPELL_SHADOW_CLEAVE				= 70670
 local SPELL_VAMPIRIC_MIGHT				= 70674
 local SPELL_FANATIC_S_DETERMINATION		= 71235
 local SPELL_DARK_MARTYRDOM_FANATIC		= 71236
  -- Adherents
-local SPELL_EMPOWERMENT					= 70901
+local SPELL_EMPOWERMENT					= 70901 -- 
 local SPELL_FROST_FEVER					= 67767
 local SPELL_DEATHCHILL_BOLT				= 70594
 local SPELL_DEATHCHILL_BLAST			= 70906
@@ -93,7 +94,6 @@ berserk = 600,
 p1wave = 5,
 waveid = 0,
 p1sbowt = math.random(5,6),
-p1ecultist = math.random(20,30),
 empower = math.random(20,30),
 dominatemind = 27, -- 25 only
  -- phase 2
@@ -135,7 +135,8 @@ if(pUnit:IsInCombat())then
 	if(pUnit:HasAura(SPELL_MANA_BARRIER) and vars.phase == 1)then
 		vars.p1wave = vars.p1wave - 1
 		vars.p1sbowt = vars.p1sbowt - 1
-		vars.p1ecultist = vars.p1ecultist - 1
+		vars.empower = vars.empower - 1
+		pUnit:SetHealthPct(100)
 		if(vars.diff == 1 or vars.diff == 3)then
 			vars.dominatemind = vars.dominatemind - 1
 		end
@@ -164,8 +165,7 @@ if(pUnit:IsInCombat())then
 			end
 		elseif(vars.empower <= 0)then
 			local cancast = false
-			vars.empower = math.random(20,30)
-			local spellid = math.random(1,2)
+			local spellid = math.random(1,3)
 			for k,v in pairs(pUnit:GetInRangeUnits())do
 				if((v:GetEntry() == NPC_FANATIC or v:GetEntry() == NPC_ADHERENTS) and v:IsAlive())then
 					cancast = true
@@ -179,12 +179,12 @@ if(pUnit:IsInCombat())then
 				pUnit:SendChatMessage(14, 0, "Take this blessing and show these intruders a taste of our master's power.")
 				pUnit:PlaySoundToSet(16873)
 				pUnit:CastSpell(SPELL_DARK_EMPOWERMENT_T)
+			elseif(spellid == 3)then
+				pUnit:SendChatMessage(14, 0, "Arise and exult in your pure form!")
+				pUnit:PlaySoundToSet(16875)
+				pUnit:CastSpell(SPELL_DARK_MARTYRDOM_T)
 			end
-		elseif(vars.p1ecultist <= 0)then
-			pUnit:SendChatMessage(14, 0, "Arise and exult in your pure form!")
-			pUnit:PlaySoundToSet(16875)
-			pUnit:CastSpell(SPELL_DARK_MARTYRDOM_T)
-			vars.p1ecultist = math.random(20,30)
+			vars.empower = math.random(20,30)
 		end
 	elseif(pUnit:HasAura(SPELL_MANA_BARRIER) == false and vars.phase == 1 and pUnit:GetMana() < pUnit:GetMaxMana()/999)then
 		pUnit:SendChatMessage(14, 0, "Enough! I see I must take matters into my own hands!")
@@ -244,7 +244,6 @@ end
 
 function BossOnDamage(pUnit, event, pAttacker, pAmount) -- 23
 if(pUnit:HasAura(SPELL_MANA_BARRIER) and pUnit:GetMana() > pAmount)then
-	pUnit:SetHealthPct(100)
 	pUnit:SetMana(pUnit:GetMana() - pAmount)
 elseif(pUnit:HasAura(SPELL_MANA_BARRIER) and pUnit:GetMana() <= pAmount)then
 	pUnit:Heal(pUnit,0,pUnit:GetMana())
@@ -351,6 +350,118 @@ elseif(pSpell == SPELL_SUMMON_SHADE)then
 end
 end
 
+function AddOnLoad(pUnit)
+pUnit:SetMovementFlags(1) 
+local plr = pUnit:GetRandomPlayer(0)
+if(plr)then
+	pUnit:MoveTo(plr:GetX(),plr:GetY(),plr:GetZ(),0)
+end
+end
+
+function AddOnCombat(pUnit, event)
+if(pUnit:GetEntry() == NPC_FANATIC)then
+	self[tostring(pUnit)] = {
+	necrotic = math.random(10,12),
+	cleave = math.random(14,16),
+	vampiric = math.random(20,27),
+	fanatic = math.random(18,32)
+	}
+elseif(pUnit:GetEntry() == NPC_ADHERENTS)then
+	self[tostring(pUnit)] = {
+	frost = math.random(10,12),
+	deathchill = math.random(14,16),
+	torpor = math.random(14,16),
+	shroud = math.random(32,39),
+	darkmarthyr = math.random(18,32)
+	}
+elseif(pUnit:GetEntry() == NPC_SHADE)then
+	pUnit:CastSpell(SPELL_VENGEFUL_BLAST)
+elseif(pUnit:GetEntry() == NPC_DARNAVAN)then
+	self[tostring(pUnit)] = {
+	bladestorm = 10,
+	shout = math.random(20,25),
+	mortstrike = math.random(25,30),
+	suarmor = math.random(5,8)
+	}
+end
+pUnit:RegisterAIUpdateEvent(1000)
+end
+
+function AddAI(pUnit)
+if(pUnit:GetEntry() == NPC_FANATIC)then
+	local vars = self[tostring(pUnit)]
+	vars.necrotic = vars.necrotic - 1
+	vars.cleave = vars.cleave - 1
+	vars.vampiric = vars.vampiric - 1
+	vars.fanatic = vars.fanatic - 1
+	if(vars.necrotic <= 0)then
+		pUnit:CastSpellOnTarget(SPELL_NECROTIC_STRIKE,pUnit:GetMainTank())
+		vars.necrotic = math.random(10,12)
+	elseif(vars.cleave)then
+		pUnit:CastSpellOnTarget(SPELL_SHADOW_CLEAVE,pUnit:GetMainTank())
+		vars.cleave = math.random(14,16)
+	elseif(vars.vampiric)then
+		pUnit:CastSpell(SPELL_VAMPIRIC_MIGHT)
+		vars.vampiric = math.random(20,27)
+	elseif(vars.fanatic)then
+		pUnit:CastSpell(SPELL_DARK_MARTYRDOM_FANATIC)
+		vars.fanatic = math.random(18,32)
+	end
+elseif(pUnit:GetEntry() == NPC_ADHERENTS)then
+	local vars = self[tostring(pUnit)]
+	vars.frost = vars.frost - 1
+	vars.deathchill = vars.deathchill - 1
+	vars.torpor = vars.torpor - 1
+	vars.shroud = vars.shroud - 1
+	vars.darkmarthyr = vars.darkmarthyr - 1
+	if(vars.frost <= 0)then
+		pUnit:CastSpellOnTarget(SPELL_FROST_FEVER,pUnit:GetMainTank())
+		vars.frost = math.random(10,12)
+	elseif(vars.deathchill)then
+		pUnit:CastSpellOnTarget(SPELL_DEATHCHILL_BLAST,pUnit:GetMainTank())
+		vars.deathchill = math.random(14,16)
+	elseif(vars.torpor)then
+		pUnit:CastSpellOnTarget(SPELL_CURSE_OF_TORPOR,pUnit:GetMainTank())
+		vars.torpor = math.random(14,16)
+	elseif(vars.shroud)then
+		pUnit:CastSpell(SPELL_SHORUD_OF_THE_OCCULT)
+		vars.shroud = math.random(32,39)
+	elseif(vars.darkmarthyr)then
+		pUnit:CastSpell(SPELL_DARK_MARTYRDOM_ADHERENT)
+		vars.darkmarthyr = math.random(18,32)
+	end
+elseif(pUnit:GetEntry() == NPC_DARNAVAN)then
+	local vars = self[tostring(pUnit)]
+	vars.bladestorm = vars.bladestorm - 1
+	vars.shout = vars.shout - 1
+	vars.mortstrike = vars.mortstrike - 1
+	vars.suarmor = vars.suarmor - 1
+	if(vars.bladestorm <= 0)then
+		pUnit:CastSpell(SPELL_BLADESTORM)
+		vars.bladestorm = 10
+	elseif(vars.shout)then
+		pUnit:CastSpell(SPELL_INTIMIDATING_SHOUT)
+		vars.shout = math.random(20,25)
+	elseif(vars.mortstrike)then
+		pUnit:CastSpellOnTarget(SPELL_MORTAL_STRIKE,pUnit:GetMainTank())
+		vars.mortstrike = math.random(25,30)
+	elseif(vars.suarmor)then
+		pUnit:CastSpellOnTarget(SPELL_SUNDER_ARMOR,pUnit:GetMainTank())
+		vars.suarmor = math.random(5,8)
+	end
+end
+end
+
+function AddOnDeath(pUnit, event)
+pUnit:RemoveEvents()
+pUnit:RemoveAIUpdateEvent()
+end
+
+function AddOnLeaveCB(pUnit, event)
+pUnit:RemoveEvents()
+pUnit:RemoveAIUpdateEvent()
+end
+
 RegisterUnitEvent(BOSS_DEATHWHISPER,1,BossOnCombat)
 RegisterUnitEvent(BOSS_DEATHWHISPER,2,BossOnLeaveCombat)
 RegisterUnitEvent(BOSS_DEATHWHISPER,3,BossOnKillPlr)
@@ -362,3 +473,23 @@ RegisterDummySpell(SPELL_DARK_TRANSFORMATION_T,DummyHandler)
 RegisterDummySpell(SPELL_DARK_EMPOWERMENT_T,DummyHandler)
 RegisterDummySpell(SPELL_DARK_MARTYRDOM_T,DummyHandler)
 RegisterDummySpell(SPELL_SUMMON_SHADE,DummyHandler)
+RegisterUnitEvent(NPC_ADHERENTS,18,AddOnLoad)
+RegisterUnitEvent(NPC_FANATIC,18,AddOnLoad)
+RegisterUnitEvent(NPC_SHADE,18,AddOnLoad)
+RegisterUnitEvent(NPC_DARNAVAN,18,AddOnLoad)
+RegisterUnitEvent(NPC_ADHERENTS,1,AddOnCombat)
+RegisterUnitEvent(NPC_FANATIC,1,AddOnCombat)
+RegisterUnitEvent(NPC_SHADE,1,AddOnCombat)
+RegisterUnitEvent(NPC_DARNAVAN,1,AddOnCombat)
+RegisterUnitEvent(NPC_ADHERENTS,21,AddAI)
+RegisterUnitEvent(NPC_FANATIC,21,AddAI)
+RegisterUnitEvent(NPC_SHADE,21,AddAI)
+RegisterUnitEvent(NPC_DARNAVAN,21,AddAI)
+RegisterUnitEvent(NPC_ADHERENTS,2,AddOnLeaveCB)
+RegisterUnitEvent(NPC_FANATIC,2,AddOnLeaveCB)
+RegisterUnitEvent(NPC_SHADE,2,AddOnLeaveCB)
+RegisterUnitEvent(NPC_DARNAVAN,2,AddOnLeaveCB)
+RegisterUnitEvent(NPC_ADHERENTS,4,AddOnDeath)
+RegisterUnitEvent(NPC_FANATIC,4,AddOnDeath)
+RegisterUnitEvent(NPC_SHADE,4,AddOnDeath)
+RegisterUnitEvent(NPC_DARNAVAN,4,AddOnDeath)

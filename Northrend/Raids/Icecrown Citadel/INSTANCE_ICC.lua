@@ -1,5 +1,6 @@
 local INSTANCE_ICC = {}
 local object_link = {
+{-3,202242},
 {36612,201910},
 {36612,201911},
 {36612,201563},
@@ -55,6 +56,51 @@ local AT_DB_PORT	= 5698
 local AT_FROSTWING	= {5618,5617,5616}
 local AT_BLOOD		= 5729
 local AT_FROZEN_T	= 5718
+
+local NPC_HIGHLORD_TIRION_FORDRING_LH			= 37119
+local NPC_THE_LICH_KING_LH						= 37181
+local NPC_HIGHLORD_BOLVAR_FORDRAGON_LH			= 37183
+local NPC_KOR_KRON_GENERAL						= 37189
+local NPC_ALLIANCE_COMMANDER					= 37190
+local NPC_TORTUNOK								= 37992 -- Druid Armor H
+local NPC_ALANA_MOONSTRIKE						= 37999 -- Druid Armor A
+local NPC_GERARDO_THE_SUAVE						= 37993 -- Hunter Armor H
+local NPC_TALAN_MOONSTRIKE						= 37998 -- Hunter Armor A
+local NPC_UVLUS_BANEFIRE						= 38284 -- Mage Armor H
+local NPC_MALFUS_GRIMFROST						= 38283 -- Mage Armor A
+local NPC_IKFIRUS_THE_VILE						= 37991 -- Rogue Armor H
+local NPC_YILI									= 37997 -- Rogue Armor A
+local NPC_VOL_GUK								= 38841 -- Shaman Armor H
+local NPC_JEDEBIA								= 38840 -- Shaman Armor A
+local NPC_HARAGG_THE_UNSEEN						= 38181 -- Warlock Armor H
+local NPC_NIBY_THE_ALMIGHTY						= 38182 -- Warlock Armor A
+local NPC_GARROSH_HELLSCREAM					= 39372
+local NPC_KING_VARIAN_WRYNN						= 39371
+local NPC_DEATHBOUND_WARD						= 37007
+
+local NPC_FROST_TRAP							= 37744
+local NPC_SE_HIGH_OVERLORD_SAURFANG				= 37187 -- H
+local NPC_SE_MURADIN_BRONZEBEARD				= 37200 -- A
+local NPC_SE_KOR_KRON_REAVER					= 37920 -- H
+local NPC_SE_SKYBREAKER_MARINE					= 37830 -- A
+
+local instance_spawn = {
+{1,NPC_KOR_KRON_GENERAL,NPC_ALLIANCE_COMMANDER,-47.585,2208.98,27.986,3.12414,1735,1732},
+{2,NPC_KOR_KRON_GENERAL,NPC_ALLIANCE_COMMANDER,-47.927,2216.32,27.986,3.12414,1735,1732},
+{3,NPC_KOR_KRON_GENERAL,NPC_ALLIANCE_COMMANDER,-46.076,2212.61,27.986,3.12414,1735,1732},
+{4,NPC_GARROSH_HELLSCREAM,NPC_KING_VARIAN_WRYNN,-49.004,2219.47,27.986,3.12414,1735,1732},
+{5,NPC_TORTUNOK,NPC_ALANA_MOONSTRIKE,-75.84,2270.65,30.655,4.92493,2070,35},
+{6,NPC_GERARDO_THE_SUAVE,NPC_TALAN_MOONSTRIKE,-70.963,2269.32,30.655,4.45763,2070,35},
+{7,NPC_UVLUS_BANEFIRE,NPC_MALFUS_GRIMFROST,-75.798,2283.46,32.868,4.69305,2070,35},
+{8,NPC_IKFIRUS_THE_VILE,NPC_YILI,-79.443,2269.37,30.655,5.30192,2070,35},
+{9,NPC_VOL_GUK,NPC_JEDEBIA,-67.792,2270.71,30.654,4.90904,2070,35},
+{10,NPC_HARAGG_THE_UNSEEN,NPC_NIBY_THE_ALMIGHTY,-63.367,2260.46,30.654,1.83418,2070,35},
+{11,NPC_SE_HIGH_OVERLORD_SAURFANG,NPC_SE_MURADIN_BRONZEBEARD,-555.958,2211.4,539.369,6.26573,1735,1732},
+{12,NPC_SE_KOR_KRON_REAVER,NPC_SE_SKYBREAKER_MARINE,-560.451,2212.86,539.368,6.17846,1735,1732},
+{13,NPC_SE_KOR_KRON_REAVER,NPC_SE_SKYBREAKER_MARINE,-560.399,2209.30,539.368,6.23082,1735,1732},
+{14,NPC_SE_KOR_KRON_REAVER,NPC_SE_SKYBREAKER_MARINE,-557.958,2207.16,539.368,6.26573,1735,1732},
+{15,NPC_SE_KOR_KRON_REAVER,NPC_SE_SKYBREAKER_MARINE,-557.936,2214.46,539.368,6.26573,1735,1732}
+}
 
 local GAMEOBJECT_BYTES_1	= 0x0006 + 0x000B
 local GAMEOBJECT_FLAGS		= 0x0006 + 0x0003
@@ -150,6 +196,17 @@ if(INSTANCE_ICC[id] == nil)then
 			end
 		until result:NextRow() ~= true;
 	end
+	for i = 1, #instance_spawn do
+		if(pPlayer:GetTeam() == 1)then
+			if(instance_spawn[i][1] == i)then
+				PerformIngameSpawn(1,instance_spawn[i][2],MAP_ICC,instance_spawn[i][4],instance_spawn[i][5],instance_spawn[i][6],instance_spawn[i][7],instance_spawn[i][8],0,0,0,0,id,0)
+			end
+		elseif(pPlayer:GetTeam() == 0)then
+			if(instance_spawn[i][1] == i)then
+				PerformIngameSpawn(1,instance_spawn[i][3],MAP_ICC,instance_spawn[i][4],instance_spawn[i][5],instance_spawn[i][6],instance_spawn[i][7],instance_spawn[i][9],0,0,0,0,id,0)
+			end
+		end		
+	end
 end
 if(INSTANCE_ICC[id].lichking ~= true and pPlayer:HasAura(SPELL_CHILL) == false)then
 	SetDBCSpellVar(SPELL_CHILL, "c_is_flags", 0x01000)
@@ -169,14 +226,23 @@ local plr = pGO:GetClosestPlayer()
 if(plr)then
 	local id = plr:GetInstanceID()
 	for b = 1,#object_link do
-		if(INSTANCE_ICC[id].marrowgar == true and pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 36612 and pGO:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
+		if(pGO:GetEntry() == object_link[b][2] and object_link[b][1] == -3 and pGO:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
 			pGO:Activate()
 		end
-		if(INSTANCE_ICC[id].deathwhisper == true and pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 36855 and pGO:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
-			pGO:Activate()
+		if(INSTANCE_ICC[id].marrowgar ~= nil)then
+			if(INSTANCE_ICC[id].marrowgar == true and object_link[b][1] == 36612 and pGO:GetEntry() == object_link[b][2] and pGO:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
+				pGO:Activate()
+			end
 		end
-		if(INSTANCE_ICC[id].saurfang == true and pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 37813 and pGO:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
+		if(INSTANCE_ICC[id].deathwhisper ~= nil)then
+			if(INSTANCE_ICC[id].deathwhisper == true and object_link[b][1] == 36855 and pGO:GetEntry() == object_link[b][2] and pGO:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
 			pGO:Activate()
+			end
+		end
+		if(INSTANCE_ICC[id].saurfang ~= nil)then
+			if(INSTANCE_ICC[id].saurfang == true and pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 37813 and pGO:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
+				pGO:Activate()
+			end
 		end
 		if(INSTANCE_ICC[id].festergut == true and INSTANCE_ICC[id].rotface == false and pGO:GetEntry() == object_link[b][2] and object_link[b][1] == 36626 and pGO:GetByte(GAMEOBJECT_BYTES_1,0) ~= 0)then
 			pGO:Activate()
