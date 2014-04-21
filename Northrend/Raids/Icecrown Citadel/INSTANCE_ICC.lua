@@ -365,6 +365,16 @@ if(nAreaId == AT_TRAP and INSTANCE_ICC[id].frtap ~= true)then
 end
 end
 
+function OnLoadTrap(pUnit)
+pUnit:RegisterAIUpdateEvent(1000)
+end
+
+function AIupdateTrap(pUnit)
+if(pUnit)then
+ -- 70460
+end
+end
+
 RegisterInstanceEvent(MAP_ICC,3,INSTANCE_ICC.OnAreaTrigger)
  -- RegisterInstanceEvent(MAP_ICC,9,INSTANCE_ICC.InstanceOnCreate)
 RegisterInstanceEvent(MAP_ICC,10,INSTANCE_ICC.InstanceDestroy)

@@ -20,4 +20,4 @@ local FriendTarget = Target:GetInRangeFriends()
 	end
 end
 
-RegisterServerHook(10, "Dk_Pestilence_Fixe")]]--
+RegisterServerHook(10, "Dk_Pestilence_Fixe")
