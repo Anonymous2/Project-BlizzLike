@@ -82,7 +82,10 @@ local SPELL_SUMMON_SPIRIT_BOMB_2			= 74299     --  (Heroic)
 local SPELL_EXPLOSION						= 73576     --  Spirit Bomb (Heroic)
 local SPELL_HARVEST_SOUL_DAMAGE_AURA		= 73655
 
-     --  Outro
+	-- Berserk
+local SPELL_BERSERK							= 47008
+
+    --  Outro
 local SPELL_FURY_OF_FROSTMOURNE				= 72350
 local SPELL_FURY_OF_FROSTMOURNE_NO_REZ		= 72351
 local SPELL_EMOTE_QUESTION_NO_SHEATH		= 73330
@@ -169,14 +172,38 @@ local LK = pUnit:GetCreatureNearestCoords(pUnit:GetX(),pUnit:GetY(),pUnit:GetZ()
 local vars = self[tostring(pUnit)]
 if(LK)then
 	vars.event = vars.event + 1
-	if(vars.event == 3)then
+	if(vars.event == 1)then
 		LK:MoveTo(432.0851,-2123.673,864.6582,0.0)
 		LK:SendChatMessage(14, 0, "So the Light's vaunted justice has finally arrived? Shall I lay down Frostmourne and throw myself at your mercy, Fordring?")
 		LK:PlaySoundToSet(17349)
-	elseif(vars.event == 5)then
+		pUnit:Emote(375,60000)
+	elseif(vars.event == 2)then
 		LK:MoveTo(457.8351,-2123.423,841.1582,0.0)
-	elseif(vars.event == 6)then
+	elseif(vars.event == 12)then
 		LK:MoveTo(465.0730,-2123.470,840.8569,0.0)
+		pUnit:SendChatMessage(14,0,"We will grant you a swift death, Arthas. More than can be said for the thousands you've tortured and slain.")
+		pUnit:PlaySoundToSet(17390)
+	elseif(vars.event == 21)then
+		LK:SendChatMessage(14,0,"You will learn of that first hand. When my work is complete, you will beg for mercy -- and I will deny you. Your anguished cries will be testament to my unbridled power.")
+		pUnit:PlaySoundToSet(17350)
+		LK:Emote(397,4000)
+	elseif(vars.event == 26)then
+		LK:Emote(1,6000)
+	elseif(vars.event == 33)then
+		LK:Emote(392,3500)
+	elseif(vars.event == 43)then
+		LK:SendChatMessage(14,0,"So be it. Champions, attack!")
+		LK:PlaySoundToSet(17391)
+		pUnit:Emote(397, 2000)
+	elseif(vars.event == 45)then
+		pUnit:SetMovementFlags(1)
+		pUnit:MoveTo(482.9019,-2124.479,840.8570,0.0)
+	elseif(vars.event == 46)then
+		LK:SendChatMessage(14,0,"I'll keep you alive to witness the end, Fordring. I would not want the Light's greatest champion to miss seeing this wretched world remade in my image.")
+		LK:PlaySoundToSet(17351)
+	elseif(vars.event == 48)then
+		pUnit:CastSpell(SPELL_ICE_LOCK)
+		LK:SetFaction(22)
 	end
 end
 end
@@ -185,14 +212,93 @@ function BossCombat(pUnit)
 pUnit:SendChatMessage(14, 0, "Come then champions, feed me your rage!")
 self[tostring(pUnit)] = {
  -- phase 1
-horror = 20,
-ghoul = 10,
-infest = 5,
+horror = 20, -- 60,70
+ghoul = 10, -- 20
+infest1 = 5, -- 30
 necrotic = math.random(30,33),
-strap = 16,
+strap = 16, -- heroic only
+ -- phase 2
+valkur = 20,
+infest2 = 5, -- 20
+reaper1 = 30,
+defile1 = false,
+ -- phase 3
+defile2 = false,
+reaper2 = 30,
+soul = 66,
+spirit = 20,
+ -- phase outtro
+timerout = 0,
  -- all
 berserk = 900,
-transition = 60,
+transition = false,
+transtimer = 0,
+diff =  pUnit:GetDungeonDifficulty(),
 phase = 1
 }
+end
+
+function BossAI(pUnit)
+local vars = self[tostring(pUnit)]
+vars.berserk = vars.berserk - 1
+if(vars.phase == 1 and vars.transition == false and pUnit:GetHealthPct() > 70)then
+	vars.horror = vars.horror - 1
+	vars.ghoul = vars.ghoul - 1
+	vars.infest1 = vars.infest1 - 1
+	vars.necrotic = vars.necrotic - 1
+	if(vars.diff == 1 or vars.diff == 3)then
+		vars.strap = vars.strap - 1
+	end
+elseif(vars.phase == 1 and vars.transition == false and pUnit:GetHealthPct() <= 70)then
+	vars.transition = true
+	vars.transtimer = 0
+	pUnit:
+	pUnit:MoveTo(503.6282,-2124.655,840.8569,0.0)
+elseif(vars.phase == 1 and vars.transition == true and vars.transtimer < 60)then
+	vars.transtimer = vars.transtimer + 1
+elseif(vars.phase == 1 and vars.transition == true and vars.transtimer >= 60)then
+	vars.transition = false
+	vars.transtimer = 0
+	vars.phase = 2
+elseif(vars.phase == 2 and vars.transition == false and pUnit:GetHealthPct() > 40)then
+	vars.valkur = vars.valkur - 1
+	vars.infest2 = vars.infest2 - 1
+	vars.reaper1 = vars.reaper1 - 1
+elseif(vars.phase == 2 and vars.transition == false and pUnit:GetHealthPct() <= 40)then
+	vars.transition = true
+	vars.transtimer = 0
+	pUnit:
+	pUnit:MoveTo(503.6282,-2124.655,840.8569,0.0)
+elseif(vars.phase == 2 and vars.transition == true and vars.transtimer < 60)then
+	vars.transtimer = vars.transtimer + 1
+elseif(vars.phase == 2 and vars.transition == true and vars.transtimer >= 60)then
+	vars.transition = false
+	vars.transtimer = 0
+	vars.phase = 3
+elseif(vars.phase == 3 and vars.transition == false and pUnit:GetHealthPct() > 10)then
+	vars.reaper2 = vars.reaper2 - 1
+	vars.soul = vars.soul - 1
+	vars.spirit = vars.spirit - 1
+elseif(vars.phase == 3 and vars.transition == false and pUnit:GetHealthPct() <= 10)then
+	vars.phase == 4
+end
+if(vars.horror <= 0)then
+	local summ = math.random(1,2)
+	if(summ == 1)then
+		pUnit:CastSpell(SPELL_SUMMON_SHAMBLING_HORROR)
+	else
+		pUnit:CastSpell(SPELL_RISEN_WITCH_DOCTOR_SPAWN)
+	end
+	vars.horror = math.random(60,70)
+elseif(vars.ghoul <= 0)then
+	pUnit:CastSpell(SPELL_SUMMON_DRUDGE_GHOULS)
+	vars.ghoul = 20
+elseif(vars.infest1 or vars.infest2)then
+	pUnit:FullCastSpellOnTarget(SPELL_INFEST,pUnit:GetMainTank())
+	vars.infest1 = 30
+	vars.infest2 = 30
+elseif(necrotic <= 0)then
+	pUnit:FullCastSpellOnTarget(SPELL_NECROTIC_PLAGUE,pUnit:GetMainTank())
+	necrotic = math.random(30,33)
+end
 end
