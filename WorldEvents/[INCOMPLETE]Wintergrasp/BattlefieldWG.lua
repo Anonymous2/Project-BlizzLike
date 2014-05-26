@@ -943,7 +943,6 @@ end
 
 function OnSP_Cpoint(pGO)
 self[tostring(pGO)] = {
-state = 0,
 plrvall = 0
 };
 for i = 1, #workshop_data do
