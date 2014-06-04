@@ -18,15 +18,12 @@ function Firenova(event, pPlayer, spell)
 for i = 1,#SPELL_DATA do
 if(spell == SPELL_DATA[i][1])then
 	for k,v in pairs(pPlayer:GetInRangeUnits())do
-	v:SendChatMessage(14, 0, "11111")
-	if(v:GetPetOwner() == pPlayer)then
-	v:SendChatMessage(14, 0, "22222")
 		for l = 1, #TOTEMS_DATA do
 			if(TOTEMS_DATA[l] == v:GetEntry())then
-				v:CastSpellAoF(v:GetX(),v:GetY(),v:GetZ(),SPELL_DATA[i][2]) 
+				pPlayer:CastSpellAoF(v:GetX(),v:GetY(),v:GetZ(),SPELL_DATA[i][2])
+				v:CastSpell(SPELL_DATA[i][2])
 			end
 		end
-	end
 	end
 end
 end
