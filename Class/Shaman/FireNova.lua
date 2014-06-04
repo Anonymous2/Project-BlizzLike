@@ -1,109 +1,35 @@
 -- Fire nova fix, all ranks
+local SPELL_DATA = {
+{1535,8349},
+{8498,8502},
+{8499,8503},
+{11314,11306},
+{11315,11307},
+{25546,25535},
+{25547,25537},
+{61649,61650},
+{61657,61654}
+}
 
-function FireNova9(event, plr, spellid)
-	if (spellid == 61657) then
-		Enemys = plr:GetInRangeEnemies()
-		if( plr:GetDistanceYards(Enemies) <= 10 ) then
-			local damage = math.random(893,997)
-			plr:DealDamage(Enemies, damage, 61657)
+local TOTEMS_DATA = {17539,30652,30653,30654,2523,3902,3903,3904,7400,7402,15480,31162,31164,31165,5950,6012,7423,10557,15485,31132,31133,
+31158,5929,7464,7465,7466,15484,31166,31167,5926,7412,7413,15486,31171,31172,15439}
+
+function Firenova(event, pPlayer, spell)
+for i = 1,#SPELL_DATA do
+if(spell == SPELL_DATA[i][1])then
+	for k,v in pairs(pPlayer:GetInRangeUnits())do
+	v:SendChatMessage(14, 0, "11111")
+	if(v:GetPetOwner() == pPlayer)then
+	v:SendChatMessage(14, 0, "22222")
+		for l = 1, #TOTEMS_DATA do
+			if(TOTEMS_DATA[l] == v:GetEntry())then
+				v:CastSpellAoF(v:GetX(),v:GetY(),v:GetZ(),SPELL_DATA[i][2]) 
+			end
 		end
 	end
-end
-
-RegisterServerHook(10, "FireNova9")
-
-function FireNova8(event, plr, spellid)
-	if (spellid == 61649) then
-		Enemys = plr:GetInRangeEnemies()
-		if( plr:GetDistanceYards(Enemies) <= 10 ) then
-			local damage = math.random(755,843)
-			plr:DealDamage(Enemies, damage, 61649)
-		end
 	end
 end
-
-RegisterServerHook(10, "FireNova8")
-
-function FireNova7(event, plr, spellid)
-	if (spellid == 25547) then
-		Enemys = plr:GetInRangeEnemies()
-		if( plr:GetDistanceYards(Enemies) <= 10 ) then
-			local damage = math.random(727,813)
-			plr:DealDamage(Enemies, damage, 25547)
-		end
-	end
+end
 end
 
-RegisterServerHook(10, "FireNova7")
-
-function FireNova6(event, plr, spellid)
-	if (spellid == 25546) then
-		Enemys = plr:GetInRangeEnemies()
-		if( plr:GetDistanceYards(Enemies) <= 10 ) then
-			local damage = math.random(518,578)
-			plr:DealDamage(Enemies, damage, 25546)
-		end
-	end
-end
-
-RegisterServerHook(10, "FireNova6")
-
-function FireNova5(event, plr, spellid)
-	if (spellid == 11315) then
-		Enemys = plr:GetInRangeEnemies()
-		if( plr:GetDistanceYards(Enemies) <= 10 ) then
-			local damage = math.random(396,442)
-			plr:DealDamage(Enemies, damage, 11315)
-		end
-	end
-end
-
-RegisterServerHook(10, "FireNova5")
-
-function FireNova4(event, plr, spellid)
-	if (spellid == 11314) then
-		Enemys = plr:GetInRangeEnemies()
-		if( plr:GetDistanceYards(Enemies) <= 10 ) then
-			local damage = math.random(281,317)
-			plr:DealDamage(Enemies, damage, 11314)
-		end
-	end
-end
-
-RegisterServerHook(10, "FireNova4")
-
-function FireNova3(event, plr, spellid)
-	if (spellid == 8499) then
-		Enemys = plr:GetInRangeEnemies()
-		if( plr:GetDistanceYards(Enemies) <= 10 ) then
-			local damage = math.random(184,208)
-			plr:DealDamage(Enemies, damage, 8499)
-		end
-	end
-end
-
-RegisterServerHook(10, "FireNova3")
-
-function FireNova2(event, plr, spellid)
-	if (spellid == 8498) then
-		Enemys = plr:GetInRangeEnemies()
-		if( plr:GetDistanceYards(Enemies) <= 10 ) then
-			local damage = math.random(102,116)
-			plr:DealDamage(Enemies, damage, 8498)
-		end
-	end
-end
-
-RegisterServerHook(10, "FireNova2")
-
-function FireNova1(event, plr, spellid)
-	if ( spellid == 1535 ) then
-		Enemys = plr:GetInRangeEnemies()
-		if( plr:GetDistanceYards(Enemies) <= 10 ) then
-			local damage = math.random(48,56)
-			plr:DealDamage(Enemies, damage, 1535)
-		end
-	end
-end
-
-RegisterServerHook(10, "FireNova1")
+RegisterServerHook(10,Firenova)
